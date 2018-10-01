@@ -1,0 +1,115 @@
+---
+title: "examen"
+author: "Edgar Granados"
+date: "September 30, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(datasets)
+library(tidyverse)
+library(ggplot2)
+data(iris)
+summary(iris)
+```
+
+## 1. Manipulación y Visualización de Datos en R
+a. Cumple la base de datos (iris) con el principio de datos limpios?
+Res. Considerando que la unididad observacional es una flor, sí cumple con el principio de datos limpios ya que cada variable forma una columna (principio 1). El principio 2 se cumple al tener solamente una tabla para la unidad observacional "flor". El principio 3 se cumple ya que cada valor de la unidad observacional "flor" es en efecto un renglón. 
+
+
+b. En caso de que no cumpla con el principio de datos limpios, limpe los datos. Imprima las primeras 6 líneas de los datos limpios. (si ya estaban limpios, entonces imprima las primeras 6 líneas de los datos originales)
+Res. 
+```{r cars}
+head(iris)
+```
+
+c. Cuántas observaciones y cuántas variables tiene la base de datos?
+Res. Utilizando la función "summary" es posible responder ésta pregunta facilmente. La base de datos contiene 5 variables. Se tienen 150 observaciones (50 de cada una de las tres especies de flor).
+```{r pr_c}
+summary(iris)
+```
+
+d. Cuál es la clase atómica de cada una de las variables?
+Res. Para obtener la clase atómica de cada variable, se utiliza la función "class". En el caso de la variable "Species", se utiliza la función "typeof" a la salida de "class" debido a que se trata de una estructura "factor". Con esto se obtiene que, todas las variables son de tipo "numeric" excepto por la variable "Species" que es de tipo "character".
+```{r pr_d}
+class(iris$Species)
+typeof(class(iris$Species))
+class(iris$Sepal.Length)
+class(iris$Sepal.Width)
+class(iris$Petal.Length)
+class(iris$Petal.Width)
+```
+
+e. Filtre las flores de la especia Setosa e imprima las primeras 6 observaciones
+Res. Se utiliza la función "filter" para obtener todas las ocurrencias de "setosa" y ésta salida se pasa a la función "head".
+```{r pr_e}
+head(filter(iris, Species == "setosa"))
+```
+
+f. Ordene la base de datos de manera descendente con respecto a la variable Petal.Length e imprima las primeras 6 observaciones.
+Res. Para ordenar una base de datos, se utiliza la función "arrange" definiendo las variables que se desea ordenera. En particular, a la variable "Petal.Length" se le aplica la función "desc" para que se ordene de manera descendiente. A la salida, se aplica la función "head" para obtener las primeras 6 observaciones.
+```{r pr_f}
+head(arrange(iris, desc(Petal.Length)))
+```
+
+g. Cree una nueva variable en donde se muestre el atributo Sepal.Length en milímetros e imprima las 6 primeras observaciones.
+Res. Se utiliza la función "mutate" para agregar una nueva variable (columna). Para los valores de ésta nueva columna, se toman los valores de la columna "Sepal.Length" y se multiplican por 10.
+```{r pr_g}
+head(mutate(iris, Sepal.Length.cm = iris$Sepal.Length* 10))
+```
+
+h. Elimine las observaciones con valores faltantes en la variable Sepal.Width e indique el número de observaciones de la nueva base de datos.
+
+Res. Examninando la base de datos original, no se encontraron valores faltantes para ninguna variable. 
+```{r pr_h}
+
+```
+
+i. Cuál es la media de la variable Petal.Width para cada una de las especies de flores?
+Res. Las medias son las siguientes:
+setosa - 0.2
+versicolor - 1.3
+virginica - 2.0
+Se utiliza la función "filter" para filtrar los datos requeridos y la función summary para obtener la media. A continuación se muestran los comandos para obtener las medias:
+```{r pr_i}
+summary(filter(iris, Species == "setosa"))
+summary(filter(iris, Species == "versicolor"))
+summary(filter(iris, Species == "virginica"))
+```
+
+j.Realice una gráfica de dispersión de las variables x=Sepal.Length contra y=Sepal.Width en la que se distingan las diferentes esoecies por color o por forma de los puntos. La gráfica debe incluir título y nombres de los ejes horizontal y vertical.
+```{r pr_j}
+ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species)) + geom_point() + ggtitle("Length vs Width of Flowers Sepals by Species") + xlab("Length") + ylab("Width")
+```
+
+k. Realice una gráfica de cajas de la variable Petal.Length en la que se distingan las diferentes especies
+```{r pr_k}
+ggplot(iris, aes(Species, Petal.Length)) + geom_boxplot() + ggtitle("Petal Length by Specie") + xlab("Specie") + ylab("Length")
+```
+
+# 2. Espacio de Probabilidad y Variables Aleatorias
+```{r pr_}
+
+```
+
+```{r pr_}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
