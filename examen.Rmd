@@ -20,7 +20,7 @@ Res. Considerando que la unididad observacional es una flor, sí cumple con el p
 
 b. En caso de que no cumpla con el principio de datos limpios, limpe los datos. Imprima las primeras 6 líneas de los datos limpios. (si ya estaban limpios, entonces imprima las primeras 6 líneas de los datos originales)
 Res. 
-```{r cars}
+```{r pr_1b}
 head(iris)
 ```
 
@@ -32,7 +32,7 @@ summary(iris)
 
 d. Cuál es la clase atómica de cada una de las variables?
 Res. Para obtener la clase atómica de cada variable, se utiliza la función "class". En el caso de la variable "Species", se utiliza la función "typeof" a la salida de "class" debido a que se trata de una estructura "factor". Con esto se obtiene que, todas las variables son de tipo "numeric" excepto por la variable "Species" que es de tipo "character".
-```{r pr_d}
+```{r warning=FALSE}
 class(iris$Species)
 typeof(class(iris$Species))
 class(iris$Sepal.Length)
@@ -94,6 +94,214 @@ ggplot(iris, aes(Species, Petal.Length)) + geom_boxplot() + ggtitle("Petal Lengt
 ```
 
 ```{r pr_}
+
+```
+
+# 4.  Bootstrap
+Se desea simular muestras de tamaño 20 de una distribución exponencial con tasa 𝜆  =1/𝛽= 1.
+El estadístico de interés 𝜃̂ es el estimador de la media 𝜃 = 𝛽. Siga el siguiente procedimiento:
+  i. Utilice la función rexp() (y la semilla 261285) para generar una muestra
+aleatoria de tamaño 20 de una distribución exponencial con 𝛽 = 1.
+  ii. Genere 2,000 muestras bootstrap y calcule intervalos de confianza con coeficiente
+de confianza de 95% para 𝜃̂ usando 1) el método normal, 2) percentiles y 3) 𝐵𝐶𝑎.
+  iii. Revise si el intervalo de confianza contiene el verdadero valor del parámetro 𝜃; en
+caso de que no lo contenga registre si falló por la izquierda o falló por la derecha.
+a. Repita 500 veces el procedimiento descrito y llena la siguiente tabla (utilice una sola vez la
+semilla)
+Res. El procedimiento descrito se realiza en una función llamada "proc_examen". EL procedimiento se repite 500 veces usando la función rerun y se guarda el resultado en un arreglo. Se implementó una función para pasar de dicho arreglo a un "data frame" para poder filtrar los resultados de acuerdo a si el parámetro se encuentra o no en el intervalo (usando la función "filter"). Por último se obtienen los resultados como porcentaje y se imprimen.
+```{r pr_4a}
+proc_examen <- function()
+{
+
+	mediaBoot <- function(x)
+	{ 
+		muestra_boot <- sample(x, size = length(x), replace = TRUE) 
+		mean(muestra_boot) # Replicacion bootstrap de theta_gorro
+	}
+	se <- function(x) sum((x - mean(x)) ^ 2) / length(x)
+	skewness <- function(x)
+	{
+    	n <- length(x)
+    	1 / n * sum((x - mean(x)) ^ 3) / sd(x) ^ 3 
+	}
+	skewness_boot <- function(x_boot)
+	{
+		x_boot <- sample(x, length(x), replace = TRUE)
+		skewness(x_boot)
+	}
+	muestra <- rexp(20, 1/beta)
+	thetas_boot <- rerun(2000, mediaBoot(muestra)) %>% flatten_dbl()
+	theta_hat <-skewness(muestra)
+	
+	li_normal <- round(theta_hat - 1.96 * sd(thetas_boot), 2)
+	ls_normal <- round(theta_hat + 1.96 * sd(thetas_boot), 2)
+
+	ls_per <- round(quantile(thetas_boot, prob = 0.975), 2)
+	li_per <- round(quantile(thetas_boot, prob = 0.025), 2)
+
+	b_var <- rerun(2000, 
+				se(sample(muestra, size = length(muestra), 
+					replace = TRUE))) %>% flatten_dbl()
+	ls_bc <- round(quantile(b_var, prob = 0.95), 2)
+	li_bc <- round(quantile(b_var, prob = 0.05), 2)
+
+	return(c(li_normal, ls_normal, li_per, ls_per, li_bc, ls_bc))
+}
+get_df_from_res <- function(arr)
+{	
+	df <- tribble(
+  		~prueba, ~li_normal, ~ls_normal, ~li_per, ~ls_per, ~li_bc, ~ls_bc
+	)
+	cont <- 1
+	for (i in 1:length(arr))
+	{
+	  switch(((i-1) %% 6)+1,
+	  	li_normal <- arr[i],
+	  	ls_normal <- arr[i],
+	  	li_per <- arr[i],
+	  	ls_per <- arr[i],
+	  	{
+	  		li_bc <- arr[i]
+	  	},
+	  	{
+	  		ls_bc <- arr[i]
+	  		df <- add_row(df, prueba = cont, 
+	  					li_normal = li_normal,
+	  					ls_normal = ls_normal,
+	  					li_per = li_per,
+	  					ls_per = ls_per,
+	  					li_bc = li_bc,
+	  					ls_bc = ls_bc
+	  			)
+	  		cont <- cont + 1
+	  	}
+	  	)
+
+	}
+	return(df)
+}
+set.seed(261285)
+res_aux <- rerun(500, proc_examen()) %>% flatten_dbl()
+df_res_aux <- get_df_from_res(res_aux)
+
+norm_izq <- nrow(filter(df_res_aux, li_normal > 1))
+norm_der <- nrow(filter(df_res_aux, ls_normal < 1))
+per_izq <- nrow(filter(df_res_aux, li_per > 1))
+per_der <- nrow(filter(df_res_aux, ls_per < 1))
+bc_izq <- nrow(filter(df_res_aux, li_bc > 1))
+bc_der <- nrow(filter(df_res_aux, ls_bc < 1))
+
+norm_cob <- nrow(filter(df_res_aux, li_normal <= 1, 1 <= ls_normal))
+per_cob <- nrow(filter(df_res_aux, li_per <= 1, 1 <= ls_per))
+bc_cob <- nrow(filter(df_res_aux, li_bc <= 1, 1 <= ls_bc))
+
+cat("Normal:\t")
+cat(norm_izq/500, ", ", norm_der/500, ", ", norm_cob/500)
+cat("\nPer:\t")
+cat(per_izq/500, ", ", per_der/500, ", ", per_cob/500)
+cat("\nBC:\t")
+cat(bc_izq/500, ", ", bc_der/500, ", ", bc_cob/500)
+cat("\n")
+
+```
+
+b. Realice una gráfica de paneles: en cada panel mostrará los resultados de uno de los
+métodos (normal, percentil y 𝐵𝐶𝑎), en el eje horizontal graficará el número de intervalos
+de confianza (1,2,…,500) y en el eje vertical graficará los límites de los intervalos, es decir,
+graficará 2 líneas (use la función geom_line): una corresponderá a los límites inferiores
+de los intervalos y la otra a los superiores.
+
+Res. Se realiza una gráfica para cada uno de los métodos y después se realiza una sola gráfica (multiplot) utilizando un script del libro "Cookbook for R".
+```{r pr_}
+p_norm <- ggplot() + 
+	geom_line(data = df_res_aux, aes(x = prueba, y = li_normal, color = "blue")) +
+	geom_line(data = df_res_aux, aes(x = prueba, y = ls_normal, color = "red")) + 
+	xlab("") + ylab("Beta") + scale_color_discrete(name = "Intervalos", labels = c("li", "ls")) + 
+	ggtitle("Variación de los Intervalos Para Cada Método") + theme(plot.title = element_text(hjust = 0.5))
+p_per <- ggplot() + 
+	geom_line(data = df_res_aux, aes(x = prueba, y = li_per, color = "blue")) +
+	geom_line(data = df_res_aux, aes(x = prueba, y = ls_per, color = "red")) + 
+	xlab("") + ylab("Beta") + scale_color_discrete(name = "Intervalos", labels = c("li", "ls"))
+
+p_bc <- ggplot() + 
+	geom_line(data = df_res_aux, aes(x = prueba, y = li_bc, color = "blue")) +
+	geom_line(data = df_res_aux, aes(x = prueba, y = ls_bc, color = "red")) + 
+	xlab("Intervalo") + ylab("Beta") + scale_color_discrete(name = "Intervalos", labels = c("li", "ls"))
+multiplot(p_norm, p_per, p_bc, cols = 1)
+
+```
+
+5. Simulación de Variables Aleatorias
+Una variable aleatoria X tiene una distribución binomial con parámetros n y p, esto es, X~Binomial(n, p), si su función de masa de probabilidad es (...).
+El objetivo es generar X a partir de una variable aleatoria U con distribución uniforme continua en el itervalo (0,1) utilizando el método de Transformación Inversa Discreta. La clave para utilizar este método en el presente caso es seguir el procedimiento indicado.��� 
+a. Encuentre la relación de recurrencia entre p_i+1 y p_i para i > 0.
+
+```{r pr_}
+
+```
+
+
+b. Utilizando la relación de recurrencia del inciso anterior, escribir un algoritmo de 5 pasos que genere una variable aleatoria binomial con parámetros n y p mediante el método de Transformación Inversa Discreta.
+```{r pr_5b}
+
+```
+
+c. Escriba en R una función que implemente el algoritmo del inciso b para n = 10 y p = 0.3
+```{r pr_5c}
+rBinomialI <- function(n, p)
+  {
+  U <- runif(1)
+  i <- 0
+  p_i <- (1 - p) ^ n
+  P <- p_i
+  while(U >= P){
+    i <- i + 1
+    p_i <- (p_i / (1 - p) ) * (n - i + 1) * p / i 
+    P <- P + p_i
+  }
+  i
+}
+rBinomialI(10, 0.3)
+```
+
+d. Realice 10,000 simulaciones utilizando la semilla 221285 y reporte las primeras 5 simulaciones obtenidas
+```{r pr_5d}
+set.seed(221285)
+binomial_aux <- rerun(10000, rBinomialI(10, 0.3)) %>% flatten_dbl()
+binomial_aux[1:5]
+```
+
+e. Genere un histograma con las 10,000 simulaciones anteriores y compárelo con una distribución construida utilizando la función dbinom de R.
+```{r pr_5e}
+set.seed(221285)
+binomial_aux <- rerun(10000, rBinomialI(10, 0.3)) %>% flatten_dbl()
+df_binomial_aux <- as.data.frame(0:10)
+
+df_binomial_aux <- add_column(df_binomial_aux, 0)
+df_res <- as_data_frame(table(binomial_aux))
+for (i in 1:length(df_res$n))
+{
+	df_binomial_aux[i,2] <- df_res$n[i]
+}
+rbinom_v <- rbinom(10000, 10, 0.3)
+df_binomial_aux <- mutate(df_binomial_aux, rbin = table(rbinom_v))
+names(df_binomial_aux) <- c("i", "MTID", "rbin")
+df_tot_bin <- mutate(df_tot_bin, rbin = rbinom_v, i = 1:10000)
+ggplot() + 
+	geom_point(data = df_tot_bin, 
+		aes(x = i, y = binomial_aux, color = "red")) + 
+	geom_point(data = df_tot_bin, 
+		aes(x = i, y = rbin, color = "blue")) +
+	xlab("Iteración") + ylab("Valor") + 
+	scale_color_discrete(name = "Método", labels = c("MTID", "rbinom"))
+
+ggplot() + 
+	geom_point(data = df_binomial_aux, 
+		aes(x = i, y = MTID, color = "red")) + 
+	geom_point(data = df_binomial_aux, 
+		aes(x = i, y = rbin, color = "blue")) +
+	xlab("Iteración") + ylab("Valor") + 
+	scale_color_discrete(name = "Método", labels = c("MTID", "rbinom"))
 
 ```
 
