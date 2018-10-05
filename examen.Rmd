@@ -226,7 +226,8 @@ proc_examen <- function()
 	skewness <- function(x)
 	{
     	n <- length(x)
-    	1 / n * sum((x - mean(x)) ^ 3) / sd(x) ^ 3 
+    	mean(x)
+    	#1 / n * sum((x - mean(x)) ^ 3) / sd(x) ^ 3 
 	}
 	skewness_boot <- function(x_boot)
 	{
@@ -235,17 +236,22 @@ proc_examen <- function()
 	}
 	muestra <- rexp(20, 1/beta)
 	thetas_boot <- rerun(2000, mediaBoot(muestra)) %>% flatten_dbl()
+	head(thetas_boot)
 	theta_hat <-skewness(muestra)
 	
-	li_normal <- round(theta_hat - 1.96 * sd(thetas_boot), 2)
-	ls_normal <- round(theta_hat + 1.96 * sd(thetas_boot), 2)
+	li_normal <- round(theta_hat + qnorm(0.025) * sd(thetas_boot), 2)
+	ls_normal <- round(theta_hat + qnorm(0.975) * sd(thetas_boot), 2)
 
 	ls_per <- round(quantile(thetas_boot, prob = 0.975), 2)
 	li_per <- round(quantile(thetas_boot, prob = 0.025), 2)
 
+	#b_var <- bcanon(x = muestra, nboot = 2000, theta = mean)
+	
 	b_var <- rerun(2000, 
-				se(sample(muestra, size = length(muestra), 
-					replace = TRUE))) %>% flatten_dbl()
+ 			se(sample(muestra, size = length(muestra), 
+ 				replace = TRUE))) %>% flatten_dbl()
+	#ls_bc <- b_var$confpoints[1,2]
+	#li_bc <- b_var$confpoints[8,2]
 	ls_bc <- round(quantile(b_var, prob = 0.95), 2)
 	li_bc <- round(quantile(b_var, prob = 0.05), 2)
 
