@@ -3,8 +3,8 @@ title: "Estadística Computacional: Primer Exámen Parcial"
 author: "Edgar Granados"
 date: "September 30, 2018"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -21,18 +21,20 @@ summary(iris)
 # 1. Manipulación y Visualización de Datos en R
 ## a. Cumple la base de datos (iris) con el principio de datos limpios?
 ### Respuesta
-Considerando que la unididad observacional es una flor, sí cumple con el principio de datos limpios ya que cada variable forma una columna (principio 1). El principio 2 se cumple al tener solamente una tabla para la unidad observacional "flor". El principio 3 se cumple ya que cada valor de la unidad observacional "flor" es en efecto un renglón. 
+Examinando la base de datos, se puede observar que la base de datos cumple con los dos primeros principios de datos limpios. En cuanto al tercer principio, la base de datos presenta el problema de tener filas que son iguales: no se puede diferenciar entre filas repetidas. Debido a esto, conviene agregar una columna adicional "id" que permita diferenciar entre distintas filas. 
+
 
 
 ## b. En caso de que no cumpla con el principio de datos limpios, limpe los datos. Imprima las primeras 6 líneas de los datos limpios. (si ya estaban limpios, entonces imprima las primeras 6 líneas de los datos originales)
 ### Respuesta 
 ```{r pr_1b, message=FALSE, warning=FALSE}
+iris <- mutate(iris, id = 1:150)
 head(iris)
 ```
 
 ## c. Cuántas observaciones y cuántas variables tiene la base de datos?
 ### Respuesta 
-Utilizando la función "summary" es posible responder ésta pregunta facilmente. La base de datos contiene 5 variables. Se tienen 150 observaciones (50 de cada una de las tres especies de flor).
+Utilizando la función "summary" es posible responder ésta pregunta facilmente. La base de datos contiene 6 variables. Se tienen 150 observaciones (50 de cada una de las tres especies de flor).
 ```{r pr_c, echo=TRUE, message=FALSE, warning=FALSE}
 summary(iris)
 ```
@@ -47,6 +49,7 @@ class(iris$Sepal.Length)
 class(iris$Sepal.Width)
 class(iris$Petal.Length)
 class(iris$Petal.Width)
+class(iris$id)
 ```
 
 ## e. Filtre las flores de la especia Setosa e imprima las primeras 6 observaciones
@@ -67,7 +70,8 @@ head(arrange(iris, desc(Petal.Length)))
 ### Respuesta
 Se utiliza la función "mutate" para agregar una nueva variable (columna). Para los valores de ésta nueva columna, se toman los valores de la columna "Sepal.Length" y se multiplican por 10.
 ```{r pr_g}
-head(mutate(iris, Sepal.Length.cm = iris$Sepal.Length* 10))
+iris <- mutate(iris, Sepal.Length.cm = iris$Sepal.Length* 10)
+head(iris)
 ```
 
 ## h. Elimine las observaciones con valores faltantes en la variable Sepal.Width e indique el número de observaciones de la nueva base de datos.
@@ -93,15 +97,23 @@ summary(filter(iris, Species == "virginica")$Petal.Width)
 ## j. Realice una gráfica de dispersión de las variables x=Sepal.Length contra y=Sepal.Width en la que se distingan las diferentes esoecies por color o por forma de los puntos. La gráfica debe incluir título y nombres de los ejes horizontal y vertical.
 ### Respuesta
 Se utilizó la librería ggplot para realizar la gráfica que se muestra a continuación:
-```{r pr_j}
-ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species)) + geom_point() + ggtitle("Length vs Width of Flowers Sepals by Species") + xlab("Length") + ylab("Width")
+```{r pr_j, cache=TRUE}
+ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species)) + 
+  geom_point() + 
+  ggtitle("Length vs Width of Flowers Sepals by Species") + 
+  xlab("Length") +
+  ylab("Width")
 ```
 
 ## k. Realice una gráfica de cajas de la variable Petal.Length en la que se distingan las diferentes especies
 ### Respuesta
 La gráfica de cajas se realizó con ggplot, se muestra a continuación:
-```{r pr_k}
-ggplot(iris, aes(Species, Petal.Length)) + geom_boxplot() + ggtitle("Petal Length by Specie") + xlab("Specie") + ylab("Length")
+```{r pr_k, cache=TRUE}
+ggplot(iris, aes(Species, Petal.Length)) +
+  geom_boxplot() +
+  ggtitle("Petal Length by Specie") + 
+  xlab("Specie") + 
+  ylab("Length")
 ```
 
 # 2. Espacio de Probabilidad y Variables Aleatorias
@@ -154,12 +166,12 @@ $$P(B) = \frac{2}{6} = \frac{1}{3} $$
 
 ### Respuesta
 
-$$(1,2,3)\rightarrow X = 2$$
-$$(1,3,2)\rightarrow X = 3$$
-$$(2,1,3)\rightarrow X = 1$$
-$$(2,3,1)\rightarrow X = 1$$
-$$(3,1,2)\rightarrow X = 3$$
-$$(3,2,1)\rightarrow X = 2$$
+$$X(\omega_0) = X((1,2,3)) = 2$$
+$$X(\omega_1) = X((1,3,2)) = 3$$
+$$X(\omega_2) = X((2,1,3)) = 1$$
+$$X(\omega_3) = X((2,3,1)) = 1$$
+$$X(\omega_4) = X((3,1,2)) = 3$$
+$$X(\omega_5) = X((3,2,1)) = 2$$
 
 ## h. Cuál es la probabilidad $P(X = 1)$?
 
@@ -186,15 +198,16 @@ $$\Omega_Y = \{(b,b,n), (b,n,b),(n,b,b)\}$$
 
 y la probabilidad de cada elemento de $\Omega_B$, dadas las probabilidades de cada urna son:
 
-$$P(\Omega_Y = (b,b,n) ) = \frac{2}{6}\cdot\frac{8}{12}\cdot\frac{3}{4} = \frac{1}{6}$$
-$$P(\Omega_Y = (b,n,b) ) = \frac{2}{6}\cdot\frac{4}{12}\cdot\frac{1}{4} = \frac{1}{36}$$
-$$P(\Omega_Y = (n,b,b) ) = \frac{4}{6}\cdot\frac{8}{12}\cdot\frac{1}{4} = \frac{1}{9}$$
+
+$$P( (b,b,n) ) = \frac{2}{6}\cdot\frac{8}{12}\cdot\frac{3}{4} = \frac{1}{6}$$
+$$P( (b,n,b) ) = \frac{2}{6}\cdot\frac{4}{12}\cdot\frac{1}{4} = \frac{1}{36}$$
+$$P( (n,b,b) ) = \frac{4}{6}\cdot\frac{8}{12}\cdot\frac{1}{4} = \frac{1}{9}$$
 
 Entonces, $$P(Y) = \frac{1}{6} + \frac{1}{36} + \frac{1}{9} = \frac{11}{36} \approx 30.6\%$$
 
 Para la intersección de X con Y, es importante notar que el espacio de resultados de X está contenido en Y, por lo que:
 
-$$P(X\cap Y) = \frac{1}{6} + \frac{1}{36} = \frac{7}{36} \approx 19.44\%$$
+$$P(X\cap Y) = P( (b,b,n) ) + P( (b,n,b) ) = \frac{1}{6} + \frac{1}{36} = \frac{7}{36} \approx 19.44\%$$
 
 Por lo que:
 
@@ -213,31 +226,19 @@ aleatoria de tamaño 20 de una distribución exponencial con $\beta = 1$.
 
 ### Respuesta
 El procedimiento descrito se realiza en una función llamada "proc_examen". EL procedimiento se repite 500 veces usando la función rerun y se guarda el resultado en un arreglo. Se implementó una función para pasar de dicho arreglo a un "data frame" para poder filtrar los resultados de acuerdo a si el parámetro se encuentra o no en el intervalo (usando la función "filter"). Por último se obtienen los resultados como porcentaje y se imprimen.
-```{r pr_4a}
+```{r pr_4a, cache=TRUE}
 proc_examen <- function()
 {
   beta <- 1
 	mediaBoot <- function(x)
 	{ 
 		muestra_boot <- sample(x, size = length(x), replace = TRUE) 
-		mean(muestra_boot) # Replicacion bootstrap de theta_gorro
-	}
-	se <- function(x) sum((x - mean(x)) ^ 2) / length(x)
-	skewness <- function(x)
-	{
-    	n <- length(x)
-    	mean(x)
-    	#1 / n * sum((x - mean(x)) ^ 3) / sd(x) ^ 3 
-	}
-	skewness_boot <- function(x_boot)
-	{
-		x_boot <- sample(x, length(x), replace = TRUE)
-		skewness(x_boot)
+		mean(muestra_boot) 
 	}
 	muestra <- rexp(20, 1/beta)
 	thetas_boot <- rerun(2000, mediaBoot(muestra)) %>% flatten_dbl()
 	head(thetas_boot)
-	theta_hat <-skewness(muestra)
+	theta_hat <-mean(muestra)
 	
 	li_normal <- round(theta_hat + qnorm(0.025) * sd(thetas_boot), 2)
 	ls_normal <- round(theta_hat + qnorm(0.975) * sd(thetas_boot), 2)
@@ -245,18 +246,14 @@ proc_examen <- function()
 	ls_per <- round(quantile(thetas_boot, prob = 0.975), 2)
 	li_per <- round(quantile(thetas_boot, prob = 0.025), 2)
 
-	#b_var <- bcanon(x = muestra, nboot = 2000, theta = mean)
-	
-	b_var <- rerun(2000, 
- 			se(sample(muestra, size = length(muestra), 
+	b_var <- rerun(2000, mean(sample(muestra, size = length(muestra), 
  				replace = TRUE))) %>% flatten_dbl()
-	#ls_bc <- b_var$confpoints[1,2]
-	#li_bc <- b_var$confpoints[8,2]
-	ls_bc <- round(quantile(b_var, prob = 0.95), 2)
-	li_bc <- round(quantile(b_var, prob = 0.05), 2)
+	ls_bc <- round(quantile(b_var, prob = 0.975), 2)
+	li_bc <- round(quantile(b_var, prob = 0.025), 2)
 
 	return(c(li_normal, ls_normal, li_per, ls_per, li_bc, ls_bc))
 }
+
 get_df_from_res <- function(arr)
 {	
 	df <- tribble(
@@ -305,12 +302,16 @@ norm_cob <- nrow(filter(df_res_aux, li_normal <= 1, 1 <= ls_normal))
 per_cob <- nrow(filter(df_res_aux, li_per <= 1, 1 <= ls_per))
 bc_cob <- nrow(filter(df_res_aux, li_bc <= 1, 1 <= ls_bc))
 
+div_var <- 5
 
 df <- tribble(
   		~Metodo, ~"% Fallo Izquierda", ~"% Fallo Derecha", ~"% Cobertura (Simulaciones)",
-  		"Normal", toString(round(norm_izq/5, 2)), toString(round(norm_der/5, 2)), toString(round(norm_cob/5, 2)),
-  		"Percentiles",toString(round(per_izq/5, 2)), toString(round(per_der/5, 2)), toString(round(per_cob/5, 2)),
-  		"BC_a", toString(round(bc_izq/5, 2)), toString(round(bc_der/5, 2)), toString(round(bc_cob/5, 2))
+  		"Normal", toString(round(norm_izq/div_var, 2)), 
+  		  toString(round(norm_der/div_var, 2)), toString(round(norm_cob/div_var, 2)),
+  		"Percentiles",toString(round(per_izq/div_var, 2)), 
+  		  toString(round(per_der/div_var, 2)), toString(round(per_cob/div_var, 2)),
+  		"BC_a", toString(round(bc_izq/div_var, 2)), 
+  		  toString(round(bc_der/div_var, 2)), toString(round(bc_cob/div_var, 2))
 	)
 
 df %>%
@@ -371,21 +372,28 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 }
 ```
 
-```{r pr_4b}
+```{r pr_4b, cache=TRUE}
 p_norm <- ggplot() + 
 	geom_line(data = df_res_aux, aes(x = prueba, y = li_normal, color = "blue")) +
 	geom_line(data = df_res_aux, aes(x = prueba, y = ls_normal, color = "red")) + 
-	xlab("") + ylab("Beta") + scale_color_discrete(name = "Intervalos", labels = c("li", "ls")) + 
-	ggtitle("Variación de los Intervalos Para Cada Método") + theme(plot.title = element_text(hjust = 0.5))
+	xlab("") + 
+  ylab("Beta") + 
+  scale_color_discrete(name = "Intervalos", labels = c("li", "ls")) + 
+	ggtitle("Variación de los Intervalos Para Cada Método") + 
+  theme(plot.title = element_text(hjust = 0.5))
 p_per <- ggplot() + 
 	geom_line(data = df_res_aux, aes(x = prueba, y = li_per, color = "blue")) +
 	geom_line(data = df_res_aux, aes(x = prueba, y = ls_per, color = "red")) + 
-	xlab("") + ylab("Beta") + scale_color_discrete(name = "Intervalos", labels = c("li", "ls"))
+	xlab("") + 
+  ylab("Beta") + 
+  scale_color_discrete(name = "Intervalos", labels = c("li", "ls"))
 
 p_bc <- ggplot() + 
 	geom_line(data = df_res_aux, aes(x = prueba, y = li_bc, color = "blue")) +
 	geom_line(data = df_res_aux, aes(x = prueba, y = ls_bc, color = "red")) + 
-	xlab("Intervalo") + ylab("Beta") + scale_color_discrete(name = "Intervalos", labels = c("li", "ls"))
+	xlab("Intervalo") + 
+  ylab("Beta") + 
+  scale_color_discrete(name = "Intervalos", labels = c("li", "ls"))
 multiplot(p_norm, p_per, p_bc, cols = 1)
 
 ```
@@ -396,15 +404,29 @@ Una variable aleatoria X tiene una distribución binomial con parámetros n y p,
 $$p_i = P\{ X = i \} = \left(\begin{array}{c}n\\ i\end{array}\right)\cdot p^i\cdot(1 - p)^{n - i}, i \in \{0,1,\dots,n\}$$
 El objetivo es generar X a partir de una variable aleatoria U con distribución uniforme continua en el itervalo (0,1) utilizando el método de Transformación Inversa Discreta. La clave para utilizar este método en el presente caso es seguir el procedimiento indicado.
 
-## a. Encuentre la relación de recurrencia entre p_i+1 y p_i para i > 0.
+## a. Encuentre la relación de recurrencia entre p_{i+1} y p_i para i > 0.
 ### Respuesta
 
-Mediante el análisis de la función de masa de probabilidad, se puede llegar a la siguiente relación de recurrencia:
+Para encontrar la relación de recurrencia entre $p_{i+1}$ y $p_i$, se empieza sustituyendo en la función de masa de probabilidad para cuando $i = 0$, obteniendo:
 
 $$P_0 = (1 - p)^n$$
 
-$$P_{i+1} = \frac{P_i(n-i+1)p}{i(1-p)}$$
-En palabras, empezando con $P_0$ como n veces $(1-p)$, a cada nueva $P_i$ se le agrega $p$ y se le *quita* $i$ y $(1 - p)$, esto es a cada iteración se reduce en uno el exponente de $(1-p)$ mientras que la divisón entre $i$ sirve para formar el factorial. 
+
+A partir de esto, es posible ir construyendo $p_{i+1}$ para $i >= 1$. Dado que la función de masa de probabilidad tiene un término $(1-p)^(n-i)$, basta con dividir entre $(1-p)$ para cada nueva $i$. Similarmente, a cada nueva $i$ se multiplica por $p$ para que al i-esimo término se tenga $p ^i$. Para obtener la parte de las combinaciones es importante recordar que $\left(\begin{array}{c}n\\ i\end{array}\right) = \frac{n!}{i!\cdot (n-i)!}$, obteniendo que para el i-esimo término, se tiene que: 
+
+
+$$\frac{1 \cdot 2 \cdot \ldots \cdot (n-i) \cdot (n - i + 1) \cdot \ldots \cdot n}{(1 \cdot 2 \cdot \ldots \cdot i) (1 \cdot 2 \cdot \ldots \cdot (n - i))} = \frac{ (n - i + 1) \cdot \ldots \cdot n}{(1 \cdot 2 \cdot \ldots \cdot i)} $$
+
+<!--
+-->
+Con lo que se tiene que $(1 \cdot 2 \cdot \ldots \cdot x)$ equivale a $i$ para el i-ésimo término.
+Similarmente, $( (n - i + 1) \cdot \ldots \cdot n )$ equivale a $(n - i + 1)$ para el i-ésimo término.
+
+Entonces, juntando todos los términos que se construyeron previamente, se tiene que:
+
+$$P_{i+1} = \frac{P_i(n-i+1)p}{i(1-p)} \quad \forall i \in \{1, \ldots, n\}$$
+
+En palabras, empezando con $P_0$ como n veces $(1-p)$, a cada nueva $P_i$ se le *agrega* $p$ y se le *quitan*  tanto $i$ como $(1 - p)$, esto es a cada iteración se reduce en uno el exponente de $(1-p)$ mientras que la divisón entre $i$ sirve para formar el factorial. 
 
 ```{r pr_5a}
 
@@ -415,8 +437,8 @@ En palabras, empezando con $P_0$ como n veces $(1-p)$, a cada nueva $P_i$ se le 
 ### Respuesta
 
 1. Generar un número aleatorio a partir de una distribución Uniforme(0,1)
-2. Inicializar $i = 0$, $P = (1 - p)^n$, $F = p$
-3. Si $U < F$ regresar i, en otro caso seguir a 4
+2. Inicializar $i = 1$, $P = (1 - p)^n$, $F = p$
+3. Si $U < F$ regresar $i - 1$, en otro caso seguir a 4
 4. $p_i = \frac{P_{i-1}(n-i+1)p}{i(1-p)}$, $F = F + p_i$, $i = i + 1$
 5. Volver a 3
 
@@ -428,18 +450,20 @@ En palabras, empezando con $P_0$ como n veces $(1-p)$, a cada nueva $P_i$ se le 
 ### Respuesta
 A continuación se presenta la función en R que implementa el algoritmo descrito anteriormente. La función recibe dos parámetros $n$ y $p$. En particular, la función se prueba con $n = 10$ y $p = 0.3$.
 ```{r pr_5c}
+set.seed(221285)
 rBinomialI <- function(n, p)
   {
   U <- runif(1)
-  i <- 0
+  i <- 1
   p_i <- (1 - p) ^ n
   Fu <- p_i
   while(U >= Fu){
-    i <- i + 1
+    
     p_i <- (p_i / (1 - p) ) * (n - i + 1) * p / i 
     Fu <- Fu + p_i
+    i <- i + 1
   }
-  i
+  i - 1
 }
 rBinomialI(10, 0.3)
 ```
@@ -455,38 +479,27 @@ binomial_aux[1:5]
 
 ## e. Genere un histograma con las 10,000 simulaciones anteriores y compárelo con una distribución construida utilizando la función dbinom de R.
 ### Respuesta
-A continuación se muestra el código completo para generar 10,000 simulaciones utilizando el algoritmo implmentado anterioremente así como utilizando la función nativa de R. Se presentan dos gráficas, la primera presenta el número obtenido para cada una de las 10,000 simulaciones de cada método. En ésta gráfica se puede ver que ambos métodos obtienen valores en los mismos rangos, aunque como una forma de determinar que se cumple la distribución de la variable aleatoria no es la más adecuada. Por esto se realiza una segunda gráfica que muestra la frecuencia obtenida para cada valor que se obtuvo en las 10,000 simulaciones. En ésta gráfica se puede ver que hay diferencias mínimas entre ambos métodos, en general la *forma* de la distribución coincide con la esperada para una variable aleatoria binomial. Si se incrementara el número de simulaciones, deberían tender a ser iguales.
-```{r pr_5e}
+A continuación se muestra el código completo para generar 10,000 simulaciones utilizando el algoritmo implmentado anterioremente así como utilizando la función nativa de R. En la gráfica se presenta la frecuencia obtenida para cada valor que se obtuvo en las 10,000 simulaciones. En ésta gráfica se puede ver que hay diferencias mínimas entre ambos métodos, en general la *forma* de la distribución coincide con la esperada para una variable aleatoria binomial. Al incrementar el número de simulaciones, deberían tender a ser iguales.
+```{r pr_5e, cache=TRUE}
 set.seed(221285)
 binomial_aux <- rerun(10000, rBinomialI(10, 0.3)) %>% flatten_dbl()
-df_binomial_aux <- as.data.frame(0:10)
+df_binomial_aux <- as.data.frame(0:9)
 
-df_binomial_aux <- add_column(df_binomial_aux, 0)
-df_res <- as_data_frame(table(binomial_aux))
-for (i in 1:length(df_res$n))
-{
-	df_binomial_aux[i,2] <- df_res$n[i]
-}
-rbinom_v <- rbinom(10000, 10, 0.3)
-df_binomial_aux <- mutate(df_binomial_aux, rbin = table(rbinom_v))
+df_binomial_aux <- mutate(df_binomial_aux, MTID = table(binomial_aux))
+df_binomial_aux$MTID <- df_binomial_aux$MTID / rep(10000, 10)
+
+rbinom_v <- dbinom(0:9, 10, 0.3)
+df_binomial_aux <- mutate(df_binomial_aux, rbin = rbinom_v)
 names(df_binomial_aux) <- c("i", "MTID", "rbin")
-df_tot_bin <- as.data.frame(binomial_aux) 
-df_tot_bin <- mutate(df_tot_bin, rbin = rbinom_v, i = 1:10000)
-ggplot() + 
-	geom_point(data = df_tot_bin, 
-		aes(x = i, y = binomial_aux, color = "red")) + 
-	geom_point(data = df_tot_bin, 
-		aes(x = i, y = rbin, color = "blue")) +
-	xlab("Iteración") + ylab("Valor") + 
-	scale_color_discrete(name = "Método", labels = c("rbinom", "MTID"))
 
 ggplot() + 
 	geom_point(data = df_binomial_aux, 
 		aes(x = i, y = MTID, color = "red")) + 
 	geom_point(data = df_binomial_aux, 
 		aes(x = i, y = rbin, color = "blue")) +
-	xlab("Iteración") + ylab("Valor") + 
-	scale_color_discrete(name = "Método", labels = c("rbinom", "MTID"))
+	xlab("Probabilidad") + ylab("n") + 
+	scale_color_discrete(name = "Método", labels = c("rbinom", "MTID")) + 
+  scale_x_continuous(breaks = 0:9)
 
 ```
 
